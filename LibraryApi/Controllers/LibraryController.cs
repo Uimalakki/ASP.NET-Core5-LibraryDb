@@ -70,6 +70,15 @@ namespace LibraryApi.Controllers
                 .ProjectTo<PublisherDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }
+
+        [HttpGet("GetAllCustomers")]
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
+        {
+            return await _context.Customers
+                .AsNoTracking()
+                .ProjectTo<CustomerDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
     }
 
     
