@@ -29,23 +29,40 @@ namespace LibraryApi
 
         }
 
+        /// <summary>
+        /// For testing purposes only, method creates test data to database
+        /// </summary>
+        /// <param name="context"></param>
         public static void CreateTestDataToDatabase(LibraryContext context)
         {
             AddPeopleToDatabase(context);
-            AddAuthorsToDatabase(context);
             AddPublishersToDatabase(context);
             AddBooksToDatabase(context);
 
             long mathBookId = context.Books.Where(x => x.Name.Equals("Essential Computer Mathematics")).Select(x => x.Id).SingleOrDefault();
             long flyBookId = context.Books.Where(x => x.Name.Equals("Flycasting Scandinavian Style")).Select(x => x.Id).SingleOrDefault();
+            long cSharpBookId = context.Books.Where(x => x.Name.Equals("C# In Depth")).Select(x => x.Id).SingleOrDefault();
             long customerId1 = context.Customers.Where(x => x.Person.FirstName.Equals("James")).Select(x => x.Id).SingleOrDefault();
             long customerId2 = context.Customers.Where(x => x.Person.FirstName.Equals("Palle")).Select(x => x.Id).SingleOrDefault();
 
+            var pastDueDateLoan = new Loan()
+            {
+                BookId = mathBookId,
+                CustomerId = customerId2,
+                DueDate = new DateTime(2021, 11, 15)
+            };
+            context.Loans.Add(pastDueDateLoan);
+
             AddLoanToDatabase(context, mathBookId, customerId1);
+            AddLoanToDatabase(context, cSharpBookId, customerId1);
             AddLoanToDatabase(context, flyBookId, customerId2);
             context.SaveChanges();
         }
 
+        /// <summary>
+        /// For testing purposes only, method adds books to database
+        /// </summary>
+        /// <param name="context">Database context</param>
         public static void AddBooksToDatabase(LibraryContext context)
         {
             var cSharpBook = new Book() {
@@ -114,6 +131,10 @@ namespace LibraryApi
             context.SaveChanges();
         }
 
+        /// <summary>
+        /// For testing purposes only, method adds people, authors and customers to database
+        /// </summary>
+        /// <param name="context">Database context</param>
         public static void AddPeopleToDatabase(LibraryContext context)
         {
             var mortensenPerson = new Person()
@@ -123,11 +144,23 @@ namespace LibraryApi
                 BirthDate = new DateTime(1960, 7, 1)
             };
 
+            var mortensenAuthor = new Author()
+            {
+                Person = mortensenPerson,
+                PersonId = mortensenPerson.Id
+            };
+
             var skeetPerson = new Person()
             {
                 FirstName = "Jon",
                 LastName = "Skeet",
                 BirthDate = new DateTime(1965, 3, 25)
+            };
+
+            var skeetAuthor = new Author()
+            {
+                Person = skeetPerson,
+                PersonId = skeetPerson.Id
             };
 
             var customerPerson1 = new Person()
@@ -168,28 +201,15 @@ namespace LibraryApi
             context.People.Add(customerPerson2);
             context.Customers.Add(newCustomer1);
             context.Customers.Add(newCustomer2);
+            context.Authors.Add(mortensenAuthor);
+            context.Authors.Add(skeetAuthor);
             context.SaveChanges();
         }
 
-        public static void AddAuthorsToDatabase(LibraryContext context)
-        {
-            var flyBookWriter = new Author()
-            {
-                Person = context.People.Where(x => x.FirstName.Equals("Henrik")).FirstOrDefault(),
-                PersonId = context.People.Where(x => x.FirstName.Equals("Henrik")).Select(x => x.Id).FirstOrDefault()
-            };
-
-            var cSharpBookWriter = new Author()
-            {
-                Person = context.People.Where(x => x.FirstName.Equals("Jon")).FirstOrDefault(),
-                PersonId = context.People.Where(x => x.FirstName.Equals("Jon")).Select(x => x.Id).FirstOrDefault()
-            };
-
-            context.Authors.Add(flyBookWriter);
-            context.Authors.Add(cSharpBookWriter);
-            context.SaveChanges();
-        }
-        
+        /// <summary>
+        /// For testing purposes only, method adds several Publishers to database
+        /// </summary>
+        /// <param name="context">Database context</param>
         public static void AddPublishersToDatabase(LibraryContext context)
         {
             var publisherOtava = new Publisher()
@@ -223,8 +243,8 @@ namespace LibraryApi
         {
             var newLoan = new Loan()
             {
-                Book = context.Books.Where(x => x.Id.Equals(bookId)).SingleOrDefault(),
-                Customer = context.Customers.Where(x => x.Id.Equals(customerId)).SingleOrDefault(),
+                BookId = bookId,
+                CustomerId = customerId,
                 DueDate = new DateTime(2021, 12, 18)
             };
 

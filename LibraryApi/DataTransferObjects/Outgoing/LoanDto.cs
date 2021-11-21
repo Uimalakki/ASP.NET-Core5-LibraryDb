@@ -8,8 +8,8 @@ namespace LibraryApi.DataTransferObjects.Outgoing
 {
     public class LoanDto
     {
+        public long LoanId { get; set; }
         public long BookId { get; set; }
-        public string BookName { get; set; }
 
         public long CustomerId { get; set; }
 
@@ -21,9 +21,7 @@ namespace LibraryApi.DataTransferObjects.Outgoing
         public LoanDtoProfile()
         {
             CreateMap<Models.Loan, LoanDto>()
-                .ForMember(loanDto => loanDto.BookId, x => x.MapFrom(loan => loan.Book.Id))
-                .ForMember(loanDto => loanDto.BookName, x => x.MapFrom(loan => loan.Book.Name))
-                .ForMember(loanDto => loanDto.CustomerId, x => x.MapFrom(loan => loan.Customer.Id));      
+                .ForMember(loanDto => loanDto.LoanId, x => x.MapFrom(loan => loan.Id));   
         }
     }
 

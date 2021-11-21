@@ -22,7 +22,7 @@ namespace LibraryApi.Controllers
         public LoansController(LibraryContext context, IMapper mapper)
         {
             _context = context;
-            _mapper = _mapper;
+            _mapper = mapper;
         }
 
         // GET: api/Loans

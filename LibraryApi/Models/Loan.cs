@@ -7,11 +7,11 @@ namespace LibraryApi.Models
 {
     public class Loan : BaseModel
     {
-        public Book Book { get; set; }
+        public long BookId { get; set; }
 
         public DateTime DueDate { get; set; }
 
-        public Customer Customer { get; set; }
+        public long CustomerId { get; set; }
 
     }
 }
