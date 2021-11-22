@@ -1,5 +1,6 @@
 using LibraryApi.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +24,9 @@ namespace LibraryApi
                 var context = services.GetRequiredService<LibraryContext>();
 
                 CreateTestDataToDatabase(context);
+
+                CheckDueLoans(context);
+                
 
                 host.Run();
             }
@@ -80,7 +84,9 @@ namespace LibraryApi
                     new Topic { Description = "c#" },
                     new Topic { Description = "computers" }
                 },
-                Author = context.Authors.Where(x => x.Person.FirstName.Equals("Jon")).FirstOrDefault()
+                Author = context.Authors.Where(x => x.Person.FirstName.Equals("Jon")).FirstOrDefault(),
+                PublishingYear = "2009",
+                Isbn = "49834758934573"
             };
 
             context.Add(cSharpBook);
@@ -101,7 +107,7 @@ namespace LibraryApi
                 },
                 Author = context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault(),
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Stackpole Books")).FirstOrDefault(),
-                PublishingDate = new DateTime(2010, 6, 8),
+                PublishingYear = "2010",
                 Isbn = "9780811705097"
             };
 
@@ -117,12 +123,12 @@ namespace LibraryApi
                 Language = context.Languages.Where(x => x.Name.Equals("english")).FirstOrDefault(),
                 Topics = new List<Topic>
                 {
-                    context.Topics.Where(x => x.Description.Equals("computers")).FirstOrDefault(),
+                    new Topic { Description = "computers" },
                     new Topic { Description = "mathematics" }
                 },
                 Author = context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault(),
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Stackpole Books")).FirstOrDefault(),
-                PublishingDate = new DateTime(1982, 5, 16),
+                PublishingYear = "1982",
                 Isbn = "9780070379909"
             };
 
@@ -252,6 +258,24 @@ namespace LibraryApi
             context.SaveChanges();
         }
 
+        /// <summary>
+        /// Method checks all loans from database to see if there's any that are passed their due date
+        /// </summary>
+        /// <param name="context"></param>
+        public async static void CheckDueLoans(LibraryContext context)
+        {
+            DateTime currentDate = DateTime.Now;
+
+           var passedDueDateLoans = await context.Loans.Where(x => x.DueDate.CompareTo(currentDate) <= 0).ToArrayAsync();
+
+           foreach(Loan loan in passedDueDateLoans)
+            {
+                System.Diagnostics.Debug.Print("Customer id of delayd loan " + loan.CustomerId.ToString());
+            }
+
+            Console.WriteLine("Mihin tämä tulostuu?");
+
+        }
         
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

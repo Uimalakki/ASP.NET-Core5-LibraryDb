@@ -20,7 +20,7 @@ namespace LibraryApi.Models
 
         public ICollection<Topic> Topics { get; set; }
 
-        public DateTime PublishingDate { get; set; }
+        public string PublishingYear { get; set; }
 
         public Author Author { get; set; }
 

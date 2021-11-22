@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LibraryApi.Models;
+using AutoMapper;
+using LibraryApi.DataTransferObjects.Outgoing;
+using AutoMapper.QueryableExtensions;
+using LibraryApi.DataTransferObjects.Incoming;
 
 namespace LibraryApi.Controllers
 {
@@ -14,17 +18,48 @@ namespace LibraryApi.Controllers
     public class BooksController : ControllerBase
     {
         private readonly LibraryContext _context;
+        private readonly IMapper _mapper;
 
-        public BooksController(LibraryContext context)
+        public BooksController(LibraryContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Books
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
-            return await _context.Books.ToListAsync();
+            return await _context.Books
+                .Include(x => x.OriginalLanguage).Include(x => x.Topics).Include(x => x.Author).Include(x => x.Publisher)
+                .Include(x => x.Language)
+                .AsNoTracking()
+                .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
+        // GET: api/Books
+        [HttpGet("GetBooksWithOptionalParameters")]
+        public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksWithOptionalParameters(
+            [FromQuery] string bookName = "", 
+            [FromQuery] string bookPublisher = "",
+            [FromQuery] string bookAuthor= "",
+            [FromQuery] string publishingYear = "",
+            [FromQuery] string isbn = "",
+            [FromQuery] string language = "")
+        {
+            return await _context.Books
+                .Include(x => x.OriginalLanguage).Include(x => x.Topics).Include(x => x.Author).Include(x => x.Publisher)
+                .Include(x => x.Language) 
+                .Where(x => x.Name.Contains(bookName) && 
+                            x.Publisher.Name.Contains(bookPublisher) && 
+                            x.Author.Person.FirstName.Contains(bookAuthor) &&
+                            x.Isbn.Contains(isbn) &&
+                            x.Language.Name.Contains(language) &&
+                            x.PublishingYear.Contains(publishingYear))
+                .AsNoTracking()
+                .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
         // GET: api/Books/5
@@ -75,12 +110,14 @@ namespace LibraryApi.Controllers
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(Book book)
+        public async Task<ActionResult<BookDtoIn>> PostBook(BookDtoIn book)
         {
-            _context.Books.Add(book);
+            var entityBook = _mapper.Map<Book>(book);
+
+            _context.Books.Add(entityBook);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBook", new { id = book.Id }, book);
+            return CreatedAtAction("GetBook", new { id = entityBook.Id }, book);
         }
 
         // DELETE: api/Books/5

@@ -21,7 +21,7 @@ namespace LibraryApi.DataTransferObjects.Outgoing
 
         public ICollection<TopicDto> Topics { get; set; }
 
-        public DateTime PublishingDate { get; set; }
+        public string PublishingYear { get; set; }
 
         public AuthorDto Author { get; set; }
 
