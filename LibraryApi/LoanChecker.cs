@@ -20,7 +20,10 @@ namespace LibraryApi
         {
             DateTime currentDate = DateTime.Now;
 
-            var customersWithDueLoans = await context.Loans.Where(x => x.DueDate.CompareTo(currentDate) <= 0).Select(x => x.CustomerId).ToArrayAsync();
+            var customersWithDueLoans = await context.Loans
+                .Where(x => x.DueDate.CompareTo(currentDate) <= 0 && x.Returned == false)
+                .Select(x => x.CustomerId)
+                .ToArrayAsync();
 
             return customersWithDueLoans.ToList();
         }

@@ -119,8 +119,42 @@ namespace LibraryApi.Controllers
             return CreatedAtAction("GetLoan", new { id = loan.Id }, loan);
         }
 
-        // DELETE: api/Loans/5
-        [HttpDelete("{id}")]
+        
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("ReturnLoan/{loanId},{customerId}")]
+        public async Task<IActionResult> ReturnLoan(long loanId, long customerId)
+        {
+            var getLoan = await _context.Loans.Where(x => x.Id == loanId).SingleOrDefaultAsync();
+
+            if(getLoan.CustomerId != customerId)
+            {
+                return BadRequest();
+            }
+
+            getLoan.Returned = true;
+
+            _context.Entry(getLoan).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!LoanExists(loanId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+            // DELETE: api/Loans/5
+            [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLoan(long id)
         {
             var loan = await _context.Loans.FindAsync(id);

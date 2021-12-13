@@ -14,6 +14,8 @@ namespace LibraryApi.DataTransferObjects.Outgoing
         public long CustomerId { get; set; }
 
         public DateTime DueDate { get; set; }
+
+        public bool Returned { get; set; }
     }
 
     public class LoanDtoProfile : Profile
