@@ -85,9 +85,37 @@ namespace LibraryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Loan>> PostLoan(Loan loan)
         {
+            var customersWithOverdueLoans = await LoanChecker.CheckDueLoans(_context);
+
+            bool isBookAvailable = await LoanChecker.isThereAvailableCopies(loan.BookId, _context);
+            System.Diagnostics.Debug.Print(isBookAvailable.ToString());
+
+            foreach (long customerId in customersWithOverdueLoans)
+            {
+                if (customerId == loan.CustomerId)
+                {
+                    Console.WriteLine("Loan denied, customerId has overdue loans.");
+                    System.Diagnostics.Debug.Print("Loan denied, customerId has overdue loans.");
+                    return BadRequest();
+                }
+
+                if (!isBookAvailable)
+                {
+                    System.Diagnostics.Debug.Print("All the copies are loaned out");
+                    return BadRequest();
+                }
+            }
+
+            var fetchedBookCollection = await _context.BookCollection
+                .Where(x => x.Book.Id == loan.BookId)
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
+            fetchedBookCollection.Quantity -= 1;
+
+            _context.Entry(fetchedBookCollection).State = EntityState.Modified;
+
             _context.Loans.Add(loan);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetLoan", new { id = loan.Id }, loan);
         }
 

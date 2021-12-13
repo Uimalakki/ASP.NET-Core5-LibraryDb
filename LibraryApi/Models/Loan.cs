@@ -13,5 +13,7 @@ namespace LibraryApi.Models
 
         public long CustomerId { get; set; }
 
+        public Boolean Returned { get; set; }
+
     }
 }

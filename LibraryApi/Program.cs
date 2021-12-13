@@ -25,9 +25,6 @@ namespace LibraryApi
 
                 CreateTestDataToDatabase(context);
 
-                CheckDueLoans(context);
-                
-
                 host.Run();
             }
 
@@ -134,6 +131,26 @@ namespace LibraryApi
 
             context.Add(flyBook);
             context.Add(mathBook);
+
+            var flyBookQuantity = new BookCollection()
+            {
+                Book = flyBook,
+                Quantity = 5
+            };
+
+            var mathBookQuantity = new BookCollection()
+            {
+                Book = mathBook,
+                Quantity = 3
+            };
+            var cSharpBookQuantity = new BookCollection()
+            {
+                Book = cSharpBook,
+                Quantity = 10
+            };
+            context.Add(flyBookQuantity);
+            context.Add(mathBookQuantity);
+            context.Add(cSharpBookQuantity);
             context.SaveChanges();
         }
 
@@ -256,27 +273,7 @@ namespace LibraryApi
 
             context.Loans.Add(newLoan);
             context.SaveChanges();
-        }
-
-        /// <summary>
-        /// Method checks all loans from database to see if there's any that are passed their due date
-        /// </summary>
-        /// <param name="context"></param>
-        public async static void CheckDueLoans(LibraryContext context)
-        {
-            DateTime currentDate = DateTime.Now;
-
-           var passedDueDateLoans = await context.Loans.Where(x => x.DueDate.CompareTo(currentDate) <= 0).ToArrayAsync();
-
-           foreach(Loan loan in passedDueDateLoans)
-            {
-                System.Diagnostics.Debug.Print("Customer id of delayd loan " + loan.CustomerId.ToString());
-            }
-
-            Console.WriteLine("Mihin tämä tulostuu?");
-
-        }
-        
+        }    
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)

@@ -16,7 +16,11 @@ namespace LibraryApi.Models
 
         public DbSet<Book> Books { get; set; }
 
+        public DbSet<BookCollection> BookCollection { get; set; }
+
         public DbSet<Customer> Customers { get; set; }
+
+        public DbSet<Librarian> Librarians { get; set; }
 
         public DbSet<Loan> Loans { get; set; }
 

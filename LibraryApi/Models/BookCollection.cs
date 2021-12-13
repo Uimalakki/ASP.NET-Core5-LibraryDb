@@ -6,9 +6,13 @@ using System.Threading.Tasks;
 
 namespace LibraryApi.Models
 {
-    public class Topic : BaseModel
+    public class BookCollection : BaseModel
     {
         [Required]
-        public string Description { get; set; }
+        public Book Book { get; set; }
+        [Required]
+        public long Quantity { get; set; }
+
+        public int ShelfNumber { get; set; }
     }
 }

@@ -27,5 +27,6 @@ namespace LibraryApi.Models
         public Publisher Publisher { get; set; }
 
         public string Isbn { get; set; }
+
     }
 }
