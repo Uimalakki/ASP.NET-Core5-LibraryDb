@@ -18,6 +18,8 @@ namespace LibraryApi.Models
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
 
+        public bool IsDeniedToLoan { get; set; }
+
         public ICollection<Loan> Loans { get; set; }
     }
 }

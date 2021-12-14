@@ -10,8 +10,6 @@ namespace LibraryApi.DataTransferObjects.Incoming
     {
         public long BookId { get; set; }
 
-        public string BookName { get; set; }
-
         public long CustomerId { get; set; }
     }
 

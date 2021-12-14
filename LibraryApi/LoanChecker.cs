@@ -48,7 +48,7 @@ namespace LibraryApi
         {
             long numberOfBookCopies = await context.BookCollection.Where(x => x.Book.Id == bookId).Select(x => x.Quantity).SingleOrDefaultAsync();
             
-            if(numberOfBookCopies > 1)
+            if(numberOfBookCopies > 0)
             {
                 return true;
             } 

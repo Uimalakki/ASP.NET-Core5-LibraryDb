@@ -141,7 +141,7 @@ namespace LibraryApi
             var mathBookQuantity = new BookCollection()
             {
                 Book = mathBook,
-                Quantity = 3
+                Quantity = 2
             };
             var cSharpBookQuantity = new BookCollection()
             {

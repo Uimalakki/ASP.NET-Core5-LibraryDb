@@ -124,16 +124,26 @@ namespace LibraryApi.Controllers
         [HttpPut("ReturnLoan/{loanId},{customerId}")]
         public async Task<IActionResult> ReturnLoan(long loanId, long customerId)
         {
-            var getLoan = await _context.Loans.Where(x => x.Id == loanId).SingleOrDefaultAsync();
+            var returnableLoan = await _context.Loans
+                .Where(x => x.Id == loanId)
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
 
-            if(getLoan.CustomerId != customerId)
+            var loanBookCollection = await _context.BookCollection.
+                Where(x => x.Book.Id == returnableLoan.BookId)
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
+
+            if(returnableLoan.CustomerId != customerId)
             {
                 return BadRequest();
             }
 
-            getLoan.Returned = true;
+            returnableLoan.Returned = true;
+            loanBookCollection.Quantity += 1;
 
-            _context.Entry(getLoan).State = EntityState.Modified;
+            _context.Entry(returnableLoan).State = EntityState.Modified;
+            _context.Entry(loanBookCollection).State = EntityState.Modified;
 
             try
             {
