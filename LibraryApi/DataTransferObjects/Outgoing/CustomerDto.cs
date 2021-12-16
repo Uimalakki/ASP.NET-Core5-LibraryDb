@@ -18,6 +18,8 @@ namespace LibraryApi.DataTransferObjects.Outgoing
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
 
+        public bool IsDeniedToLoan { get; set; }
+
         public ICollection<LoanDto> Loans { get; set; }
     }
 

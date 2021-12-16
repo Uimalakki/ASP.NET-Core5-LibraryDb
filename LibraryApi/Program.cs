@@ -268,7 +268,7 @@ namespace LibraryApi
             {
                 BookId = bookId,
                 CustomerId = customerId,
-                DueDate = new DateTime(2021, 12, 18)
+                DueDate = DateTime.Now.AddDays(30)
             };
 
             context.Loans.Add(newLoan);

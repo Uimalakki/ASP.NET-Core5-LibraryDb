@@ -22,6 +22,7 @@ namespace LibraryApi
 
             var customersWithDueLoans = await context.Loans
                 .Where(x => x.DueDate.CompareTo(currentDate) <= 0 && x.Returned == false)
+                .AsNoTracking()
                 .Select(x => x.CustomerId)
                 .ToArrayAsync();
 
@@ -32,21 +33,27 @@ namespace LibraryApi
         {
             DateTime currentDate = DateTime.Now;
 
-            var passedDueDateLoans = await context.Loans.Where(x => x.DueDate.CompareTo(currentDate) <= 0).ToArrayAsync();
+            var passedDueDateLoans = await context.Loans
+                .Where(x => x.DueDate.CompareTo(currentDate) <= 0 && x.CustomerId == customerId)
+                .AsNoTracking()
+                .ToArrayAsync();
 
-            foreach (Loan loan in passedDueDateLoans)
+            if(passedDueDateLoans.Length > 0)
             {
-                if (loan.CustomerId == customerId)
-                {
-                    return true;
-                }
-            }
+                System.Diagnostics.Debug.Print("Loan denied, customer has overdue loans.");
+                return true;
+            } 
+
             return false;
         }
 
-        public async static Task<bool> isThereAvailableCopies(long bookId, LibraryContext context)
+        public async static Task<bool> IsThereAvailableCopies(long bookId, LibraryContext context)
         {
-            long numberOfBookCopies = await context.BookCollection.Where(x => x.Book.Id == bookId).Select(x => x.Quantity).SingleOrDefaultAsync();
+            long numberOfBookCopies = await context.BookCollection
+                .Where(x => x.Book.Id == bookId)
+                .AsNoTracking()
+                .Select(x => x.Quantity)
+                .SingleOrDefaultAsync();
             
             if(numberOfBookCopies > 0)
             {
@@ -54,8 +61,26 @@ namespace LibraryApi
             } 
             else
             {
+                System.Diagnostics.Debug.Print("All the book copies are already loaned out");
                 return false;
             } 
+        }
+
+        public async static Task<bool> CustomerIsDeniedToLoan(long customerId, LibraryContext context)
+        {
+            bool isDeniedToLoan = await context.Customers
+                .Where(x => x.Id == customerId)
+                .AsNoTracking()
+                .Select(x => x.IsDeniedToLoan)
+                .SingleOrDefaultAsync();
+
+            if(isDeniedToLoan)
+            {
+                System.Diagnostics.Debug.Print("Customer has status: denied to loan");
+                return true;
+            }
+
+            return false;
         }
     }
 }

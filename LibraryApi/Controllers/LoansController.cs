@@ -9,6 +9,7 @@ using LibraryApi.Models;
 using AutoMapper;
 using LibraryApi.DataTransferObjects.Outgoing;
 using AutoMapper.QueryableExtensions;
+using LibraryApi.DataTransferObjects.Incoming;
 
 namespace LibraryApi.Controllers
 {
@@ -83,27 +84,15 @@ namespace LibraryApi.Controllers
         // POST: api/Loans
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Loan>> PostLoan(Loan loan)
+        public async Task<ActionResult<LoanDtoIn>> PostLoan(LoanDtoIn loan)
         {
-            var customersWithOverdueLoans = await LoanChecker.CheckDueLoans(_context);
+            bool isBookAvailable = await LoanChecker.IsThereAvailableCopies(loan.BookId, _context);
+            bool customerHasOverdueLoans = await LoanChecker.HasCustomerDueLoans(loan.CustomerId, _context);
+            bool isDeniedToLoan = await LoanChecker.CustomerIsDeniedToLoan(loan.CustomerId, _context);
 
-            bool isBookAvailable = await LoanChecker.isThereAvailableCopies(loan.BookId, _context);
-            System.Diagnostics.Debug.Print(isBookAvailable.ToString());
-
-            foreach (long customerId in customersWithOverdueLoans)
+            if (customerHasOverdueLoans || isDeniedToLoan || !isBookAvailable)
             {
-                if (customerId == loan.CustomerId)
-                {
-                    Console.WriteLine("Loan denied, customerId has overdue loans.");
-                    System.Diagnostics.Debug.Print("Loan denied, customerId has overdue loans.");
-                    return BadRequest();
-                }
-
-                if (!isBookAvailable)
-                {
-                    System.Diagnostics.Debug.Print("All the copies are loaned out");
-                    return BadRequest();
-                }
+                return BadRequest();
             }
 
             var fetchedBookCollection = await _context.BookCollection
@@ -114,9 +103,13 @@ namespace LibraryApi.Controllers
 
             _context.Entry(fetchedBookCollection).State = EntityState.Modified;
 
-            _context.Loans.Add(loan);
+            var entityLoan = _mapper.Map<Loan>(loan);
+
+            entityLoan.DueDate = DateTime.Now.AddDays(30);
+
+            _context.Loans.Add(entityLoan);
             await _context.SaveChangesAsync();
-            return CreatedAtAction("GetLoan", new { id = loan.Id }, loan);
+            return CreatedAtAction("GetLoan", new { id = entityLoan.Id }, loan);
         }
 
         

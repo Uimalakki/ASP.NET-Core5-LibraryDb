@@ -31,7 +31,10 @@ namespace LibraryApi.Controllers
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
             return await _context.Books
-                .Include(x => x.OriginalLanguage).Include(x => x.Topics).Include(x => x.Author).Include(x => x.Publisher)
+                .Include(x => x.OriginalLanguage)
+                .Include(x => x.Topics)
+                .Include(x => x.Author)
+                .Include(x => x.Publisher)
                 .Include(x => x.Language)
                 .AsNoTracking()
                 .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
