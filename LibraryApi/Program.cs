@@ -25,6 +25,8 @@ namespace LibraryApi
 
                 CreateTestDataToDatabase(context);
 
+                LoanChecker.CheckDueLoans(context);
+
                 host.Run();
             }
 
@@ -52,7 +54,16 @@ namespace LibraryApi
                 CustomerId = customerId2,
                 DueDate = new DateTime(2021, 11, 15)
             };
+
+            var loanDueInOneWeek = new Loan()
+            {
+                BookId = flyBookId,
+                CustomerId = customerId1,
+                DueDate = DateTime.Now.AddDays(7)
+            };
+
             context.Loans.Add(pastDueDateLoan);
+            context.Loans.Add(loanDueInOneWeek);
 
             AddLoanToDatabase(context, mathBookId, customerId1);
             AddLoanToDatabase(context, cSharpBookId, customerId1);

@@ -10,7 +10,7 @@ namespace LibraryApi
     [AttributeUsage(AttributeTargets.Method)]
     public class LibrarianAuthorization : Attribute, IResourceFilter
     {
-        //private const string AuthorizationKey = "ByThePowerOfGreyskull";
+        
         public LibrarianAuthorization()
         {
 

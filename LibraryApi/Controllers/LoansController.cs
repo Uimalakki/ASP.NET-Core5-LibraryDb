@@ -88,7 +88,7 @@ namespace LibraryApi.Controllers
         {
             bool isBookAvailable = await LoanChecker.IsThereAvailableCopies(loan.BookId, _context);
             bool customerHasOverdueLoans = await LoanChecker.HasCustomerDueLoans(loan.CustomerId, _context);
-            bool isDeniedToLoan = await LoanChecker.CustomerIsDeniedToLoan(loan.CustomerId, _context);
+            bool isDeniedToLoan = await LoanChecker.IsCustomerDeniedToLoan(loan.CustomerId, _context);
 
             if (customerHasOverdueLoans || isDeniedToLoan || !isBookAvailable)
             {
