@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace LibraryApi.Models
 {
-    public class Publisher : Company
+    public class Company : BaseModel
     {
-
+        [Required]
+        public string Name { get; set; }
+        public string City { get; set; }
     }
 }

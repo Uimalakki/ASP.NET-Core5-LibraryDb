@@ -13,5 +13,7 @@ namespace LibraryApi.Models
 
         public Person Person { get; set; }
 
+        public ICollection<Book> Books { get; set; }
+
     }
 }

@@ -22,9 +22,11 @@ namespace LibraryApi.Models
 
         public string PublishingYear { get; set; }
 
-        public Author Author { get; set; }
+        public ICollection<Author> Authors { get; set; }
 
         public Publisher Publisher { get; set; }
+
+        public PrintingHouse PrintingHouse { get; set; }
 
         public string Isbn { get; set; }
 

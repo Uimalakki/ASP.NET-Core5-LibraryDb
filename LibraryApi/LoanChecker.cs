@@ -18,33 +18,68 @@ namespace LibraryApi
         /// <param name="context"></param>
         public async static void CheckDueLoans(LibraryContext context)
         {
+            
             DateTime oneWeekAhead = DateTime.Now.AddDays(7);
             DateTime currentDate = DateTime.Now;
 
-            var customerIdWithDueLoans = await context.Loans
-                .Where(x => x.DueDate.CompareTo(oneWeekAhead) <= 0 && 
-                            x.DueDate.CompareTo(currentDate) >= 0 && 
-                            x.Returned == false)
-                .AsNoTracking()
-                .Select(x => x.CustomerId)
+            var dueLoans = await context.Loans
+                .Where(x => x.DueDate.CompareTo(oneWeekAhead) <= 0 &&
+                            x.Returned == false &&
+                            x.DueDateRemindedAt.Day < currentDate.Day)
                 .ToArrayAsync();
 
-            var allCustomers = await context.Customers
-                .Include(x => x.Person)
-                .AsNoTracking()
-                .ToArrayAsync();
-
-            foreach (Customer customer in allCustomers)
+            /*foreach(Loan loan in dueLoans)
             {
-                foreach(long id in customerIdWithDueLoans)
+                var customer = await context.Customers.FindAsync(loan.CustomerId);
+                loan.DueDateRemindedAt = currentDate;
+                if(loan.DueDate.Day < currentDate.Day && !loan.LastReminderSent)
                 {
-                    if(customer.Id == id)
-                    {
-                        System.Diagnostics.Debug.Print($"Remainder has been sent to a customer {customer.Person.FirstName} {customer.Person.LastName}");
-                    }
+                    System.Diagnostics.Debug.Print($"Laina on umpeutunut, muistutus lähetetty asiakkaalle: {customer.Person.FirstName} {customer.Person.LastName}");
+                    loan.LastReminderSent = true;
                 }
+                else
+                {
+                    System.Diagnostics.Debug.Print($"Muistutus lainan lähestyvästä eräpäivästä lähetetty asiakkaalle: {customer.Person.FirstName} {customer.Person.LastName}");
+                }
+                //UpdateLoan(loan, context);
+                context.Entry(loan).State = EntityState.Modified;
+
+            }*/
+
+            foreach (Loan loan in dueLoans)
+            {
+                var customer = await context.Customers.FindAsync(loan.CustomerId);
+                var person = await context.People.FindAsync(customer.PersonId);
+                loan.DueDateRemindedAt = currentDate;
+                if (loan.DueDate.Day < currentDate.Day && !loan.LastReminderSent)
+                {
+                    System.Diagnostics.Debug.Print($"Laina on umpeutunut, muistutus lähetetty asiakkaalle: {person.FirstName} {person.LastName}");
+                    loan.LastReminderSent = true;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Print($"Muistutus lainan lähestyvästä eräpäivästä lähetetty asiakkaalle: {person.FirstName} {person.LastName}");
+                }
+                //UpdateLoan(loan, context);
+                context.Entry(loan).State = EntityState.Modified;
+
             }
 
+            context.SaveChanges();
+        }
+
+        private async static void UpdateLoan(Loan loan, LibraryContext context)
+        {
+            context.Entry(loan).State = EntityState.Modified;
+
+            /*try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }*/
         }
 
         /// <summary>

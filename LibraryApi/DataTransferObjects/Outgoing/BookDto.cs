@@ -23,11 +23,16 @@ namespace LibraryApi.DataTransferObjects.Outgoing
 
         public string PublishingYear { get; set; }
 
-        public AuthorDto Author { get; set; }
+        public ICollection<AuthorDto> Authors { get; set; }
 
         public PublisherDto Publisher { get; set; }
 
+        public PrintingHouseDto PrintingHouse { get; set; }
+
         public string Isbn { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     public class BookDtoProfile : Profile 

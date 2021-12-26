@@ -1,14 +1,11 @@
 using LibraryApi.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LibraryApi
 {
@@ -38,22 +35,37 @@ namespace LibraryApi
         /// <param name="context"></param>
         public static void CreateTestDataToDatabase(LibraryContext context)
         {
+            
             AddPeopleToDatabase(context);
             AddPublishersToDatabase(context);
             AddBooksToDatabase(context);
+
+            if(context.Loans.Any())
+            {
+                return;
+            }
 
             long mathBookId = context.Books.Where(x => x.Name.Equals("Essential Computer Mathematics")).Select(x => x.Id).SingleOrDefault();
             long flyBookId = context.Books.Where(x => x.Name.Equals("Flycasting Scandinavian Style")).Select(x => x.Id).SingleOrDefault();
             long cSharpBookId = context.Books.Where(x => x.Name.Equals("C# In Depth")).Select(x => x.Id).SingleOrDefault();
             long customerId1 = context.Customers.Where(x => x.Person.FirstName.Equals("James")).Select(x => x.Id).SingleOrDefault();
             long customerId2 = context.Customers.Where(x => x.Person.FirstName.Equals("Palle")).Select(x => x.Id).SingleOrDefault();
+            long customerId3 = context.Customers.Where(x => x.Person.FirstName.Equals("Helmut")).Select(x => x.Id).SingleOrDefault();
 
             var pastDueDateLoan = new Loan()
             {
                 BookId = mathBookId,
                 CustomerId = customerId2,
+                LastReminderSent = true,
                 DueDate = new DateTime(2021, 11, 15)
             };
+            var dueDateSendReminder = new Loan()
+            {
+                BookId = mathBookId,
+                CustomerId = customerId3,
+                DueDate = DateTime.Now.AddDays(-1)
+            };
+
 
             var loanDueInOneWeek = new Loan()
             {
@@ -64,6 +76,7 @@ namespace LibraryApi
 
             context.Loans.Add(pastDueDateLoan);
             context.Loans.Add(loanDueInOneWeek);
+            context.Loans.Add(dueDateSendReminder);
 
             AddLoanToDatabase(context, mathBookId, customerId1);
             AddLoanToDatabase(context, cSharpBookId, customerId1);
@@ -77,6 +90,11 @@ namespace LibraryApi
         /// <param name="context">Database context</param>
         public static void AddBooksToDatabase(LibraryContext context)
         {
+            if(context.Books.Any())
+            {
+                return;
+            }
+
             var cSharpBook = new Book() {
                 Name = "C# In Depth",
                 Description = "The powerful, flexible C# programming language is the foundation of .NET development. " +
@@ -86,13 +104,20 @@ namespace LibraryApi
                               "better time to learn C# in depth.",
                 Language = new Language() { Name = "english" },
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Gummerus kustannus")).FirstOrDefault(),
-                Topics = new List<Topic>
+                PrintingHouse = new PrintingHouse() { 
+                    Name = "Gummerus kirjapaino", 
+                    City = "Jyväskylä"
+                },
+                Topics = new List<Topic>()
                 {
                     new Topic { Description = "programming" },
                     new Topic { Description = "c#" },
                     new Topic { Description = "computers" }
                 },
-                Author = context.Authors.Where(x => x.Person.FirstName.Equals("Jon")).FirstOrDefault(),
+                Authors = new List<Author>()
+                {
+                    context.Authors.Where(x => x.Person.FirstName.Equals("Jon")).FirstOrDefault()
+                },
                 PublishingYear = "2009",
                 Isbn = "49834758934573"
             };
@@ -108,13 +133,22 @@ namespace LibraryApi
                               "any situation he encounters effortlessly.",
                 Language = context.Languages.Where(x => x.Name.Equals("english")).FirstOrDefault(),
                 OriginalLanguage = new Language() { Name = "danish" },
-                Topics = new List<Topic>
+                Topics = new List<Topic>()
                 {
                     new Topic { Description = "flyfishing"},
                     new Topic { Description = "outdoors" }
                 },
-                Author = context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault(),
+                Authors = new List<Author>()
+                {
+                    context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault()
+                },
+                    
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Stackpole Books")).FirstOrDefault(),
+                PrintingHouse = new PrintingHouse()
+                {
+                    Name = "Graphicom",
+                    City = "Vicenza"
+                },
                 PublishingYear = "2010",
                 Isbn = "9780811705097"
             };
@@ -129,12 +163,15 @@ namespace LibraryApi
                               "topic-by-topic format. You also get hundreds of examples, solved problems, and " +
                               "practice exercises to test your skills.",
                 Language = context.Languages.Where(x => x.Name.Equals("english")).FirstOrDefault(),
-                Topics = new List<Topic>
+                Topics = new List<Topic>()
                 {
-                    new Topic { Description = "computers" },
+                    
                     new Topic { Description = "mathematics" }
                 },
-                Author = context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault(),
+                Authors = new List<Author>()
+                {
+                    context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault()
+                },
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Stackpole Books")).FirstOrDefault(),
                 PublishingYear = "1982",
                 Isbn = "9780070379909"
@@ -171,6 +208,11 @@ namespace LibraryApi
         /// <param name="context">Database context</param>
         public static void AddPeopleToDatabase(LibraryContext context)
         {
+            if(context.People.Any())
+            {
+                return;
+            }
+
             var mortensenPerson = new Person()
             {
                 FirstName = "Henrik",
@@ -224,17 +266,34 @@ namespace LibraryApi
             {
                 Person = customerPerson2,
                 PersonId = customerPerson2.Id,
-                Address = "Pöllölaaksontie 1, 00100, Helsinki",
+                Address = "Takoraudantie 4, 00700, Helsinki",
                 PhoneNumber = "0650656406",
                 Email = "James@fasdf.com"
             };
 
+            var customerPerson3 = new Person()
+            {
+                FirstName = "Helmut",
+                LastName = "Pallit",
+                BirthDate = new DateTime(1970, 4, 12),
+            };
+            var newCustomer3 = new Customer()
+            {
+                Person = customerPerson3,
+                PersonId = customerPerson3.Id,
+                Address = "Teerisuontie 5, 00700, Helsinki",
+                PhoneNumber = "0650656406",
+                Email = "Helmut@fasdf.com"
+            };
+
             context.People.Add(mortensenPerson);
             context.People.Add(skeetPerson);
+            context.People.Add(customerPerson3);
             context.People.Add(customerPerson1);
             context.People.Add(customerPerson2);
             context.Customers.Add(newCustomer1);
             context.Customers.Add(newCustomer2);
+            context.Customers.Add(newCustomer3);
             context.Authors.Add(mortensenAuthor);
             context.Authors.Add(skeetAuthor);
             context.SaveChanges();
@@ -246,6 +305,11 @@ namespace LibraryApi
         /// <param name="context">Database context</param>
         public static void AddPublishersToDatabase(LibraryContext context)
         {
+            if(context.Publishers.Any())
+            {
+                return;
+            }
+
             var publisherOtava = new Publisher()
             {
                 Name = "Otava kustannus"
@@ -275,6 +339,11 @@ namespace LibraryApi
         /// <param name="customerId">Id of the customer</param>
         public static void AddLoanToDatabase(LibraryContext context, long bookId, long customerId)
         {
+            if(context.Loans.Any())
+            {
+                return;
+            }
+
             var newLoan = new Loan()
             {
                 BookId = bookId,

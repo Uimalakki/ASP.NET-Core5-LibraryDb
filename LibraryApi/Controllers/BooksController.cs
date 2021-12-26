@@ -33,7 +33,7 @@ namespace LibraryApi.Controllers
             return await _context.Books
                 .Include(x => x.OriginalLanguage)
                 .Include(x => x.Topics)
-                .Include(x => x.Author)
+                .Include(x => x.Authors)
                 .Include(x => x.Publisher)
                 .Include(x => x.Language)
                 .AsNoTracking()
@@ -46,17 +46,20 @@ namespace LibraryApi.Controllers
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksWithOptionalParameters(
             [FromQuery] string bookName = "", 
             [FromQuery] string bookPublisher = "",
+            [FromQuery] string bookPrintHouse = "",
+            [FromQuery] string bookTopic = "",
             [FromQuery] string bookAuthor= "",
             [FromQuery] string publishingYear = "",
             [FromQuery] string isbn = "",
             [FromQuery] string language = "")
         {
             return await _context.Books
-                .Include(x => x.OriginalLanguage).Include(x => x.Topics).Include(x => x.Author).Include(x => x.Publisher)
-                .Include(x => x.Language) 
+                .Include(x => x.OriginalLanguage).Include(x => x.Publisher).Include(x => x.Language)
+                .Include(x => x.Topics.Where(x => x.Description.Contains(bookTopic)))
+                .Include(x => x.Authors.Where(x => x.Person.FirstName.Contains(bookAuthor)))
                 .Where(x => x.Name.Contains(bookName) && 
-                            x.Publisher.Name.Contains(bookPublisher) && 
-                            x.Author.Person.FirstName.Contains(bookAuthor) &&
+                            x.Publisher.Name.Contains(bookPublisher) &&
+                            x.PrintingHouse.Name.Contains(bookPrintHouse) &&
                             x.Isbn.Contains(isbn) &&
                             x.Language.Name.Contains(language) &&
                             x.PublishingYear.Contains(publishingYear))

@@ -10,5 +10,7 @@ namespace LibraryApi.Models
     {
         [Required]
         public string Description { get; set; }
+
+        public ICollection<Book> Book { get; set; }
     }
 }

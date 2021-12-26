@@ -32,7 +32,7 @@ namespace LibraryApi
 
             services.AddControllers();
 
-            services.AddDbContext<LibraryContext>(opt => opt.UseInMemoryDatabase("LibraryList"));
+            services.AddDbContext<LibraryContext>(opt => opt.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=LibraryDbJuPi;Trusted_Connection=True;"));
 
             services.AddSwaggerGen(c =>
             {
