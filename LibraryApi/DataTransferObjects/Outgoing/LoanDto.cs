@@ -15,7 +15,7 @@ namespace LibraryApi.DataTransferObjects.Outgoing
 
         public DateTime DueDate { get; set; }
 
-        public DateTime DueDateReminder { get; set; }
+        public DateTime DueDateRemindedAt { get; set; }
 
         public bool Returned { get; set; }
     }

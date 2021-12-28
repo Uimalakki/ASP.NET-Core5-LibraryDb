@@ -71,7 +71,7 @@ namespace LibraryApi
             {
                 BookId = flyBookId,
                 CustomerId = customerId1,
-                DueDate = DateTime.Now.AddDays(7)
+                DueDate = DateTime.Now.AddDays(6)
             };
 
             context.Loans.Add(pastDueDateLoan);

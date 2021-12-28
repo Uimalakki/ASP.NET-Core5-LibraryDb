@@ -53,14 +53,34 @@ namespace LibraryApi.Controllers
         // PUT: api/Loans/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLoan(long id, Loan loan)
+        public async Task<IActionResult> PutLoan(long id, LoanDtoIn loan)
         {
             if (id != loan.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(loan).State = EntityState.Modified;
+            try
+            {
+                var loanEntity = await _context.Loans.FindAsync(id);
+
+                loanEntity = _mapper.Map(loan, loanEntity);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if(!LoanExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            /*_context.Entry(loan).State = EntityState.Modified;
 
             try
             {
@@ -76,7 +96,7 @@ namespace LibraryApi.Controllers
                 {
                     throw;
                 }
-            }
+            }*/
 
             return NoContent();
         }

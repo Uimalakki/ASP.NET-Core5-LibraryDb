@@ -8,9 +8,14 @@ namespace LibraryApi.DataTransferObjects.Incoming
 {
     public class LoanDtoIn
     {
+        public long Id { get; set; }
         public long BookId { get; set; }
 
         public long CustomerId { get; set; }
+
+        public DateTime DueDateRemindedAt { get; set; }
+
+        public bool Returned { get; set; }
     }
 
     public class LoanDtoInProfile : Profile

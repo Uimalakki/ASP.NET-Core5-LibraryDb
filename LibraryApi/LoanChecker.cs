@@ -28,24 +28,6 @@ namespace LibraryApi
                             x.DueDateRemindedAt.Day < currentDate.Day)
                 .ToArrayAsync();
 
-            /*foreach(Loan loan in dueLoans)
-            {
-                var customer = await context.Customers.FindAsync(loan.CustomerId);
-                loan.DueDateRemindedAt = currentDate;
-                if(loan.DueDate.Day < currentDate.Day && !loan.LastReminderSent)
-                {
-                    System.Diagnostics.Debug.Print($"Laina on umpeutunut, muistutus lähetetty asiakkaalle: {customer.Person.FirstName} {customer.Person.LastName}");
-                    loan.LastReminderSent = true;
-                }
-                else
-                {
-                    System.Diagnostics.Debug.Print($"Muistutus lainan lähestyvästä eräpäivästä lähetetty asiakkaalle: {customer.Person.FirstName} {customer.Person.LastName}");
-                }
-                //UpdateLoan(loan, context);
-                context.Entry(loan).State = EntityState.Modified;
-
-            }*/
-
             foreach (Loan loan in dueLoans)
             {
                 var customer = await context.Customers.FindAsync(loan.CustomerId);
@@ -60,27 +42,13 @@ namespace LibraryApi
                 {
                     System.Diagnostics.Debug.Print($"Muistutus lainan lähestyvästä eräpäivästä lähetetty asiakkaalle: {person.FirstName} {person.LastName}");
                 }
-                //UpdateLoan(loan, context);
+
                 context.Entry(loan).State = EntityState.Modified;
 
             }
 
             context.SaveChanges();
-        }
-
-        private async static void UpdateLoan(Loan loan, LibraryContext context)
-        {
-            context.Entry(loan).State = EntityState.Modified;
-
-            /*try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
-            }*/
-        }
+        } 
 
         /// <summary>
         /// Boolean method that returns value true if customerId has overdued loans.
