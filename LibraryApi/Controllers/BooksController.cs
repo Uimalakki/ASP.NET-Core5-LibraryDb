@@ -55,14 +55,16 @@ namespace LibraryApi.Controllers
         {
             return await _context.Books
                 .Include(x => x.OriginalLanguage).Include(x => x.Publisher).Include(x => x.Language)
-                .Include(x => x.Topics.Where(x => x.Description.Contains(bookTopic)))
-                .Include(x => x.Authors.Where(x => x.Person.FirstName.Contains(bookAuthor)))
+                .Include(x => x.Topics)
+                .Include(x => x.Authors)
                 .Where(x => x.Name.Contains(bookName) && 
                             x.Publisher.Name.Contains(bookPublisher) &&
                             x.PrintingHouse.Name.Contains(bookPrintHouse) &&
                             x.Isbn.Contains(isbn) &&
                             x.Language.Name.Contains(language) &&
-                            x.PublishingYear.Contains(publishingYear))
+                            x.PublishingYear.Contains(publishingYear) &&
+                            x.Authors.Any(x => x.Person.FirstName.Contains(bookAuthor)) &&
+                            x.Topics.Any(x => x.Description.Contains(bookTopic)))
                 .AsNoTracking()
                 .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
