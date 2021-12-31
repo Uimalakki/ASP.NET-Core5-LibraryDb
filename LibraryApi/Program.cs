@@ -23,6 +23,7 @@ namespace LibraryApi
                 CreateTestDataToDatabase(context);
 
                 LoanChecker.CheckDueLoans(context);
+                //LoanChecker.CheckDatabaseForOverdueLoans(context);
 
                 host.Run();
             }
@@ -74,9 +75,19 @@ namespace LibraryApi
                 DueDate = DateTime.Now.AddDays(6)
             };
 
+            var returnedLoan = new Loan()
+            {
+                BookId = flyBookId,
+                CustomerId = customerId2,
+                DueDate = new DateTime(2021, 11, 6),
+                CreatedAt = new DateTime(2021, 10, 7),
+                Returned = true
+            };
+
             context.Loans.Add(pastDueDateLoan);
             context.Loans.Add(loanDueInOneWeek);
             context.Loans.Add(dueDateSendReminder);
+            context.Loans.Add(returnedLoan);
 
             AddLoanToDatabase(context, mathBookId, customerId1);
             AddLoanToDatabase(context, cSharpBookId, customerId1);
@@ -165,7 +176,7 @@ namespace LibraryApi
                 Language = context.Languages.Where(x => x.Name.Equals("english")).FirstOrDefault(),
                 Topics = new List<Topic>()
                 {
-                    
+                    context.Topics.Where(x => x.Description.Equals("computers")).FirstOrDefault(),
                     new Topic { Description = "mathematics" }
                 },
                 Authors = new List<Author>()
@@ -173,6 +184,7 @@ namespace LibraryApi
                     context.Authors.Where(x => x.Person.FirstName.Equals("Henrik")).FirstOrDefault()
                 },
                 Publisher = context.Publishers.Where(x => x.Name.Equals("Stackpole Books")).FirstOrDefault(),
+                PrintingHouse = context.PrintingHouses.Where(x => x.Name.Equals("Graphicom")).SingleOrDefault(),
                 PublishingYear = "1982",
                 Isbn = "9780070379909"
             };
@@ -268,7 +280,7 @@ namespace LibraryApi
                 PersonId = customerPerson2.Id,
                 Address = "Takoraudantie 4, 00700, Helsinki",
                 PhoneNumber = "0650656406",
-                Email = "James@fasdf.com"
+                Email = "Palle@fasdf.com"
             };
 
             var customerPerson3 = new Person()

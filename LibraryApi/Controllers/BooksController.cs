@@ -87,17 +87,20 @@ namespace LibraryApi.Controllers
         // PUT: api/Books/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBook(long id, Book book)
+        public async Task<IActionResult> PutBook(long id, BookDtoIn book)
         {
             if (id != book.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(book).State = EntityState.Modified;
 
             try
             {
+                var bookEntity = await _context.Books.FindAsync(id);
+
+                bookEntity = _mapper.Map(book, bookEntity);
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -118,7 +121,7 @@ namespace LibraryApi.Controllers
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BookDtoIn>> PostBook(BookDtoIn book)
+        public async Task<ActionResult<NewBookDtoIn>> PostBook(NewBookDtoIn book)
         {
             var entityBook = _mapper.Map<Book>(book);
 

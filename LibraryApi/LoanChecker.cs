@@ -13,9 +13,9 @@ namespace LibraryApi
     public class LoanChecker
     {
         /// <summary>
-        /// Method returns a list of customerId's with overdue loans 
+        /// Method checks all loans past due and loans that have near due date  
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">Database context</param>
         public async static void CheckDueLoans(LibraryContext context)
         {
             
@@ -25,30 +25,33 @@ namespace LibraryApi
             var dueLoans = await context.Loans
                 .Where(x => x.DueDate.CompareTo(oneWeekAhead) <= 0 &&
                             x.Returned == false &&
-                            x.DueDateRemindedAt.Day < currentDate.Day)
+                            !x.LastReminderSent)
                 .ToArrayAsync();
 
             foreach (Loan loan in dueLoans)
             {
                 var customer = await context.Customers.FindAsync(loan.CustomerId);
                 var person = await context.People.FindAsync(customer.PersonId);
-                loan.DueDateRemindedAt = currentDate;
-                if (loan.DueDate.Day < currentDate.Day && !loan.LastReminderSent)
+                
+
+                if (loan.DueDate.CompareTo(currentDate) >= 0 && loan.DueDateRemindedAt.Day < currentDate.Day)
                 {
-                    System.Diagnostics.Debug.Print($"Laina on umpeutunut, muistutus lähetetty asiakkaalle: {person.FirstName} {person.LastName}");
-                    loan.LastReminderSent = true;
+                    System.Diagnostics.Debug.Print($"A reminder of loan {loan.Id}'s incoming due date has been sent to the customer: {person.FirstName} {person.LastName}");
+                    Console.WriteLine($"A reminder of loan {loan.Id}'s incoming due date has been sent to the customer: {person.FirstName} {person.LastName}");
+                    loan.DueDateRemindedAt = currentDate;
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Print($"Muistutus lainan lähestyvästä eräpäivästä lähetetty asiakkaalle: {person.FirstName} {person.LastName}");
+                    System.Diagnostics.Debug.Print($"Loan {loan.Id} is over due, a reminder has been sent to the customer: {person.FirstName} {person.LastName}");
+                    Console.WriteLine($"The loan {loan.Id} is past due, a reminder has been sent to the customer: {person.FirstName} {person.LastName}");
+                    loan.LastReminderSent = true;
                 }
 
                 context.Entry(loan).State = EntityState.Modified;
-
             }
 
-            context.SaveChanges();
-        } 
+                context.SaveChanges();
+        }
 
         /// <summary>
         /// Boolean method that returns value true if customerId has overdued loans.
@@ -94,7 +97,7 @@ namespace LibraryApi
             } 
             else
             {
-                System.Diagnostics.Debug.Print("All the book copies are already loaned out");
+                System.Diagnostics.Debug.Print("There's no available copies of desired book.");
                 return false;
             } 
         }

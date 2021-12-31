@@ -9,6 +9,7 @@ using LibraryApi.Models;
 using AutoMapper;
 using LibraryApi.DataTransferObjects.Outgoing;
 using AutoMapper.QueryableExtensions;
+using LibraryApi.DataTransferObjects.Incoming;
 
 namespace LibraryApi.Controllers
 {
@@ -52,17 +53,19 @@ namespace LibraryApi.Controllers
         // PUT: api/Customers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(long id, Customer customer)
+        public async Task<IActionResult> PutCustomer(long id, CustomerDtoIn customer)
         {
             if (id != customer.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(customer).State = EntityState.Modified;
-
             try
             {
+                var customerEntity = await _context.Customers.FindAsync(id);
+
+                customerEntity = _mapper.Map(customer, customerEntity);
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -83,12 +86,23 @@ namespace LibraryApi.Controllers
         // POST: api/Customers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        public async Task<ActionResult<NewCustomerDtoIn>> PostCustomer(NewCustomerDtoIn customer)
         {
-            _context.Customers.Add(customer);
+            var entityCustomer = _mapper.Map<Customer>(customer);
+
+            var newPerson = new Person()
+            {
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+            };
+
+            entityCustomer.Person = newPerson;
+
+            _context.People.Add(newPerson);
+            _context.Customers.Add(entityCustomer);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
+            return CreatedAtAction("GetCustomer", new { id = entityCustomer.Id }, customer);
         }
 
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -127,8 +141,9 @@ namespace LibraryApi.Controllers
         }
 
 
-            // DELETE: api/Customers/5
-            [HttpDelete("{id}")]
+         // DELETE: api/Customers/5
+        [HttpDelete("{id}")]
+        [LibrarianAuthorization]
         public async Task<IActionResult> DeleteCustomer(long id)
         {
             var customer = await _context.Customers.FindAsync(id);

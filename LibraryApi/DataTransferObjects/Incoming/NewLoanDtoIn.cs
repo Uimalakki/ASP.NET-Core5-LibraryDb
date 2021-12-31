@@ -6,20 +6,18 @@ using System.Threading.Tasks;
 
 namespace LibraryApi.DataTransferObjects.Incoming
 {
-    public class LoanDtoIn
+    public class NewLoanDtoIn
     {
-        public long Id { get; set; }
         public long BookId { get; set; }
 
         public long CustomerId { get; set; }
-
     }
 
-    public class LoanDtoInProfile : Profile
+    public class NewLoanDtoInProfile : Profile
     {
-        public LoanDtoInProfile()
+        public NewLoanDtoInProfile()
         {
-            CreateMap<Models.Loan, LoanDtoIn>().ReverseMap();
+            CreateMap<Models.Loan, NewLoanDtoIn>().ReverseMap();
         }
     }
 }

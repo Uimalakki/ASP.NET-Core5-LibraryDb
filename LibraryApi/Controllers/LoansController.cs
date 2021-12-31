@@ -104,7 +104,7 @@ namespace LibraryApi.Controllers
         // POST: api/Loans
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<LoanDtoIn>> PostLoan(LoanDtoIn loan)
+        public async Task<ActionResult<NewLoanDtoIn>> PostLoan(NewLoanDtoIn loan)
         {
             bool isBookAvailable = await LoanChecker.IsThereAvailableCopies(loan.BookId, _context);
             bool customerHasOverdueLoans = await LoanChecker.HasCustomerDueLoans(loan.CustomerId, _context);
@@ -117,7 +117,6 @@ namespace LibraryApi.Controllers
 
             var fetchedBookCollection = await _context.BookCollection
                 .Where(x => x.Book.Id == loan.BookId)
-                .AsNoTracking()
                 .SingleOrDefaultAsync();
             fetchedBookCollection.Quantity -= 1;
 
