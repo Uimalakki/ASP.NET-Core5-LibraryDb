@@ -17,7 +17,7 @@ namespace LibraryApi.Models
 
         public DbSet<Book> Books { get; set; }
 
-        public DbSet<BookCollection> BookCollection { get; set; }
+        public DbSet<BookCollection> BookCollections { get; set; }
 
         public DbSet<Customer> Customers { get; set; }
 

@@ -115,7 +115,7 @@ namespace LibraryApi.Controllers
                 return BadRequest();
             }
 
-            var fetchedBookCollection = await _context.BookCollection
+            var fetchedBookCollection = await _context.BookCollections
                 .Where(x => x.Book.Id == loan.BookId)
                 .SingleOrDefaultAsync();
             fetchedBookCollection.Quantity -= 1;
@@ -141,7 +141,7 @@ namespace LibraryApi.Controllers
                 .AsNoTracking()
                 .SingleOrDefaultAsync();
 
-            var loanBookCollection = await _context.BookCollection.
+            var loanBookCollection = await _context.BookCollections.
                 Where(x => x.Book.Id == returnableLoan.BookId)
                 .AsNoTracking()
                 .SingleOrDefaultAsync();

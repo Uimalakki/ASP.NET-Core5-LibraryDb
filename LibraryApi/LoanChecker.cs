@@ -85,7 +85,7 @@ namespace LibraryApi
         /// <returns></returns>
         public async static Task<bool> IsThereAvailableCopies(long bookId, LibraryContext context)
         {
-            long numberOfBookCopies = await context.BookCollection
+            long numberOfBookCopies = await context.BookCollections
                 .Where(x => x.Book.Id == bookId)
                 .AsNoTracking()
                 .Select(x => x.Quantity)

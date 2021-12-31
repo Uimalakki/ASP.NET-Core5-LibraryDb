@@ -23,7 +23,6 @@ namespace LibraryApi
                 CreateTestDataToDatabase(context);
 
                 LoanChecker.CheckDueLoans(context);
-                //LoanChecker.CheckDatabaseForOverdueLoans(context);
 
                 host.Run();
             }

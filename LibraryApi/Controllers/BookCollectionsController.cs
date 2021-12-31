@@ -9,6 +9,7 @@ using LibraryApi.Models;
 using AutoMapper;
 using LibraryApi.DataTransferObjects.Outgoing;
 using AutoMapper.QueryableExtensions;
+using LibraryApi.DataTransferObjects.Incoming;
 
 namespace LibraryApi.Controllers
 {
@@ -29,7 +30,7 @@ namespace LibraryApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookCollectionDto>>> GetBookQuantities()
         {
-            return await _context.BookCollection
+            return await _context.BookCollections
                 .Include(x => x.Book)
                 .AsNoTracking()
                 .ProjectTo<BookCollectionDto>(_mapper.ConfigurationProvider)
@@ -40,7 +41,7 @@ namespace LibraryApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BookCollection>> GetBookQuantity(long id)
         {
-            var bookQuantity = await _context.BookCollection.FindAsync(id);
+            var bookQuantity = await _context.BookCollections.FindAsync(id);
 
             if (bookQuantity == null)
             {
@@ -53,17 +54,19 @@ namespace LibraryApi.Controllers
         // PUT: api/BookQuantities/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBookQuantity(long id, BookCollection bookQuantity)
+        public async Task<IActionResult> PutBookQuantity(long id, BookCollectionDtoIn bookCollection)
         {
-            if (id != bookQuantity.Id)
+            if (id != bookCollection.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(bookQuantity).State = EntityState.Modified;
-
             try
             {
+                var bookCollectionEntity = await _context.BookCollections.FindAsync(id);
+
+                bookCollectionEntity = _mapper.Map(bookCollection, bookCollectionEntity);
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -84,25 +87,34 @@ namespace LibraryApi.Controllers
         // POST: api/BookQuantities
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BookCollection>> PostBookQuantity(BookCollection bookQuantity)
+        public async Task<ActionResult<NewBookCollectionDtoIn>> PostBookQuantity(NewBookCollectionDtoIn bookCollection)
         {
-            _context.BookCollection.Add(bookQuantity);
+            var book = await _context.Books.FindAsync(bookCollection.BookId);
+
+            var bookCollectionEntity = new BookCollection()
+            {
+                Book = book,
+                ShelfNumber = bookCollection.ShelfNumber,
+                Quantity = bookCollection.Quantity
+            };
+
+            _context.BookCollections.Add(bookCollectionEntity);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBookQuantity", new { id = bookQuantity.Id }, bookQuantity);
+            return CreatedAtAction("GetBookQuantity", new { id = bookCollectionEntity.Id }, bookCollection);
         }
 
         // DELETE: api/BookQuantities/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBookQuantity(long id)
         {
-            var bookQuantity = await _context.BookCollection.FindAsync(id);
+            var bookQuantity = await _context.BookCollections.FindAsync(id);
             if (bookQuantity == null)
             {
                 return NotFound();
             }
 
-            _context.BookCollection.Remove(bookQuantity);
+            _context.BookCollections.Remove(bookQuantity);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -110,7 +122,7 @@ namespace LibraryApi.Controllers
 
         private bool BookQuantityExists(long id)
         {
-            return _context.BookCollection.Any(e => e.Id == id);
+            return _context.BookCollections.Any(e => e.Id == id);
         }
     }
 }

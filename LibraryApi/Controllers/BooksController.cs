@@ -94,7 +94,6 @@ namespace LibraryApi.Controllers
                 return BadRequest();
             }
 
-
             try
             {
                 var bookEntity = await _context.Books.FindAsync(id);
@@ -129,23 +128,7 @@ namespace LibraryApi.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetBook", new { id = entityBook.Id }, book);
-        }
-
-        // DELETE: api/Books/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(long id)
-        {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
+        }  
 
         private bool BookExists(long id)
         {
