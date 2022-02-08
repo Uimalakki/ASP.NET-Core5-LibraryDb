@@ -1,3 +1,1 @@
-Created with ASP.NET Core 5
-
-Library API
+.NET 5 back end api for a library app.
