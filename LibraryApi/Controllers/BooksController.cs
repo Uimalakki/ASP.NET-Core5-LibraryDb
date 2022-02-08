@@ -120,7 +120,7 @@ namespace LibraryApi.Controllers
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<NewBookDtoIn>> PostBook(NewBookDtoIn book)
+        public async Task<ActionResult<BookDto>> PostBook(NewBookDtoIn book)
         {
             var entityBook = _mapper.Map<Book>(book);
 
